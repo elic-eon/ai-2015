@@ -88,13 +88,60 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "[Project 2] YOUR CODE HERE"
-    util.raiseNotDefined()
+    visitedPositions = [problem.getStartState()]
+    positionStack = [(problem.getStartState(), None, 1)]
+    degreeStack = [0]
+    directionStack = []
+    while not problem.isGoalState(positionStack[-1][0]):
+        successors = problem.getSuccessors(positionStack[-1][0])
+        degree = 0
+        
+        for successor in successors:
+            if successor[0] not in visitedPositions:
+                positionStack.append(successor)
+                degree += 1
+
+        if degree == 0:
+            positionStack.pop()
+            directionStack.pop()
+        else:
+            degreeStack.append(degree)
+            
+        while degreeStack[-1] == 0:
+            positionStack.pop()
+            degreeStack.pop()
+            directionStack.pop()
+
+        degreeStack[-1] -= 1
+        directionStack.append(positionStack[-1][1])
+        visitedPositions.append(positionStack[-1][0])
+                
+    return directionStack
 
 "P2-2"
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "[Project 2] YOUR CODE HERE"
-    util.raiseNotDefined()
+    visitedPositions = [problem.getStartState()]
+    positionQueue = [(problem.getStartState(), None, 1, 0)]
+    position = 0;
+    while not problem.isGoalState(positionQueue[position][0]):
+        successors = problem.getSuccessors(positionQueue[position][0])
+        
+        for successor in successors:
+            if successor[0] not in visitedPositions:
+                visitedPositions.append(successor[0])
+                positionQueue.append(successor + (position,))
+
+        position += 1
+    
+    directions = []
+    
+    while position != 0:
+        directions.insert(0, positionQueue[position][1])
+        position = positionQueue[position][3]
+        
+    return directions
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""

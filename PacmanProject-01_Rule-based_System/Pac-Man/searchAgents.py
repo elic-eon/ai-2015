@@ -57,11 +57,15 @@ class GoEastAgent(Agent):
 
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
+<<<<<<< HEAD
         "[Project 1] YOUR CODE HERE"
+=======
+>>>>>>> 8623eb170f7b44d0cb71352681ed646d62cf21f6
         if Directions.EAST in state.getLegalPacmanActions():
             return Directions.EAST
         else:
             return Directions.STOP
+<<<<<<< HEAD
             
 "P1-2"
 class CleanerAgent(Agent):
@@ -81,10 +85,39 @@ class CleanerAgent(Agent):
             return Directions.SOUTH;
         else:
             return Directions.STOP;
+=======
+
+"P1-2"
+class CleanerAgent(Agent):
+    "The floor is too dirty."
+
+    def getAction(self, state):
+        "The agent receives a GameState (defined in pacman.py)."
+        if state.getPacmanState().getDirection() == Directions.STOP:
+			return Directions.EAST
+
+        currentFood = state.getFood()
+        pacmanDirection = state.getPacmanState().getDirection()
+
+        if pacmanDirection in state.getLegalPacmanActions():
+            nextx, nexty = state.generatePacmanSuccessor(pacmanDirection).getPacmanPosition()
+            if currentFood[nextx][nexty]:
+                return pacmanDirection
+            else:
+                return self.turnRight(pacmanDirection)
+        elif self.turnRight(pacmanDirection) in state.getLegalPacmanActions():
+            return self.turnRight(pacmanDirection)
+        else:
+		    return Directions.STOP
+            
+    def turnRight(self, direction):
+        return Directions.RIGHT[direction]
+>>>>>>> 8623eb170f7b44d0cb71352681ed646d62cf21f6
             
 "P1-3"
 class FroggerAgent(Agent):
     "It's dangerous to cross streets with eyes closed."
+<<<<<<< HEAD
     
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
@@ -116,6 +149,49 @@ class FroggerAgent(Agent):
         return current
 
             
+=======
+
+    def getAction(self, state):
+        "The agent receives a GameState (defined in pacman.py)."
+        #print(state.getPacmanPosition())
+        #for ghostState in state.getGhostStates():
+        #    print(" " + str(ghostState.getPosition()))
+            
+        if state.getPacmanPosition()[0] < 3 and state.getPacmanPosition()[1] == 8: # In starting state
+            if Directions.EAST in state.getLegalPacmanActions():
+                return Directions.EAST
+        elif state.getPacmanPosition()[0] == 3 and state.getPacmanPosition()[1] > 3:
+            go = True
+            if state.getPacmanPosition()[1] == 6:
+                for ghostState in state.getGhostStates():
+                    if ghostState.getPosition()[0] == 3:
+                        go = False
+                    elif ghostState.getPosition()[0] == 2 and ghostState.getDirection() == Directions.EAST:
+                        go = False
+                    elif ghostState.getPosition()[0] == 4 and ghostState.getDirection() == Directions.WEST:
+                        go = False
+            if go:
+                if Directions.SOUTH in state.getLegalPacmanActions():
+                    return Directions.SOUTH
+        elif state.getPacmanPosition()[1] == 3 and state.getPacmanPosition()[0] < 8:
+            go = True
+            if state.getPacmanPosition()[0] == 5:
+                for ghostState in state.getGhostStates():
+                    if ghostState.getPosition()[1] == 3:
+                        go = False
+                    elif ghostState.getPosition()[1] == 2 and ghostState.getDirection() == Directions.NORTH:
+                        go = False
+                    elif ghostState.getPosition()[1] == 4 and ghostState.getDirection() == Directions.SOUTH:
+                        go = False
+            if go:
+                if Directions.EAST in state.getLegalPacmanActions():
+                    return Directions.EAST
+        else:
+            if Directions.SOUTH in state.getLegalPacmanActions():
+                return Directions.SOUTH
+                
+        return Directions.STOP
+>>>>>>> 8623eb170f7b44d0cb71352681ed646d62cf21f6
         
 "P1-4"
 class SnakeAgent(Agent):
@@ -123,7 +199,54 @@ class SnakeAgent(Agent):
     
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
+<<<<<<< HEAD
         "[Project 1] YOUR CODE HERE"
+=======
+        #print(state.getPacmanPosition())
+        
+        if state.getPacmanPosition()[0] < 3: # In starting state
+            if Directions.EAST in state.getLegalPacmanActions():
+                return Directions.EAST
+        elif state.getPacmanPosition()[0] == 3: # First hole
+            go = True
+            for ghostState in state.getGhostStates():
+                if ghostState.getPosition()[0] <= 3 or ghostState.getDirection() != Directions.EAST:
+                    go = False
+            print (go)
+            if state.getPacmanPosition()[1] == 3:
+                if go and Directions.EAST in state.getLegalPacmanActions():
+                    return Directions.EAST
+                if Directions.NORTH in state.getLegalPacmanActions():
+                    return Directions.NORTH
+            else:
+                if go and Directions.SOUTH in state.getLegalPacmanActions():
+                    return Directions.SOUTH
+        elif state.getPacmanPosition()[0] > 3 and state.getPacmanPosition()[0] <12:
+            if Directions.EAST in state.getLegalPacmanActions():
+                return Directions.EAST
+        elif state.getPacmanPosition()[0] == 12:
+            if state.getPacmanPosition()[1] == 3:
+                go = True
+                for ghostState in state.getGhostStates():
+                    if ghostState.getPosition()[0] >= 12:
+                        go = False
+                if go and Directions.EAST in state.getLegalPacmanActions():
+                    return Directions.EAST
+                if Directions.SOUTH in state.getLegalPacmanActions():
+                    return Directions.SOUTH
+            else:
+                go = True
+                for ghostState in state.getGhostStates():
+                    if ghostState.getPosition()[0] >= 12 or (ghostState.getPosition()[0] >= 10 and ghostState.getDirection() == Directions.EAST):
+                        go = False
+                if go and Directions.NORTH in state.getLegalPacmanActions():
+                    return Directions.NORTH
+        elif state.getPacmanPosition()[0] > 12:
+            if Directions.EAST in state.getLegalPacmanActions():
+                return Directions.EAST
+                
+        return Directions.STOP
+>>>>>>> 8623eb170f7b44d0cb71352681ed646d62cf21f6
 
 #######################################################
 # This portion is written for you, but will only work #
