@@ -174,7 +174,6 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                 pq.push((state[0], newpath), problem.getCostOfActions(newpath) + heuristic(state[0], problem))
                 visited += [state[0]]
 
-
 # Abbreviations
 bfs = breadthFirstSearch
 dfs = depthFirstSearch
