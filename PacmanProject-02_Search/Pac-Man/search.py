@@ -165,14 +165,16 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     pq.push((problem.getStartState(), path), 0 + heuristic(problem.getStartState(), problem))
     while pq.isEmpty() != 1:
         lowest, path = pq.pop()
+        if lowest in visited:
+            continue
         if problem.isGoalState(lowest):
             return path
+        visited += [lowest]
         states = problem.getSuccessors(lowest)
         for state in states:
             if state[0] not in visited:
                 newpath = path + [state[1]]
                 pq.push((state[0], newpath), problem.getCostOfActions(newpath) + heuristic(state[0], problem))
-                visited += [state[0]]
 
 
 # Abbreviations
