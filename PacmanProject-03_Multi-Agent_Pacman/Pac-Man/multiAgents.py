@@ -156,10 +156,46 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.getNumAgents():
             Returns the total number of agents in the game
         """
-        
+
         "[Project 3] YOUR CODE HERE"
-        
-        util.raiseNotDefined()
+
+        actionsList = []
+        score, choice, actionsList = self.minimax(gameState, self.depth, 0, actionsList)
+        #print(choice)
+        #print(score)
+        #print(actionsList)
+        #raw_input()
+        return choice
+
+    def minimax(self, nodeState, depth, playerIndex, actionsList):
+        if depth == 0 and playerIndex == 1:
+            return (self.evaluationFunction(nodeState), None, actionsList)
+        if playerIndex == 0:
+            actions = nodeState.getLegalActions(playerIndex)
+            #print("depth: " + str(depth))
+            #print(actionsList)
+            if len(actions) == 0:
+                return (self.evaluationFunction(nodeState), None, actionsList)
+            vals = [self.minimax(nodeState.generateSuccessor(playerIndex, action), \
+                    depth-1, nodeState.getNumAgents()-1, actionsList + [action]) for action in actions]
+            #if depth == 4:
+                #print(actions)
+                #print(vals)
+            maxval = max(vals, key=lambda item:item[0])[0]
+            actionIndex = [index for index in range(len(vals)) if vals[index][0] == maxval]
+            if len(actionIndex) > 1:
+                for index in actionIndex:
+                    if actions[index] != Directions.STOP:
+                        return (maxval, actions[index], vals[index][2])
+            else:
+                return (maxval, actions[actionIndex[0]], vals[actionIndex[0]][2])
+        else:
+            actions = nodeState.getLegalActions(playerIndex)
+            if len(actions) == 0:
+                return (self.evaluationFunction(nodeState), None, actionsList)
+            vals = [self.minimax(nodeState.generateSuccessor(playerIndex, action), \
+                    depth, playerIndex-1, actionsList) for action in actions]
+            return min(vals, key=lambda item:item[0])
 
 "P3-3"
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -173,8 +209,49 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         
         "[Project 3] YOUR CODE HERE"        
+
+        actionsList = []
+        score, choice, actionsList = self.alpha_beta(gameState, self.depth, 0, actionsList, float("-inf"), float("inf"))
+        #print(score)
+        #print(actionsList)
+        return choice
         
-        util.raiseNotDefined()
+    def alpha_beta(self, nodeState, depth, playerIndex, actionsList, alpha, beta):
+        if depth == 0 and playerIndex == 1:
+            return (self.evaluationFunction(nodeState), None, actionsList)
+        if playerIndex == 0:
+            actions = nodeState.getLegalActions(playerIndex)
+            if len(actions) == 0:
+                return (self.evaluationFunction(nodeState), None, actionsList)
+            vals = []
+            for action in actions:
+                val = self.alpha_beta(nodeState.generateSuccessor(playerIndex, action), \
+                        depth-1, nodeState.getNumAgents()-1, actionsList+[action], alpha, beta)
+                vals += [val]
+                alpha = max(alpha, val[0])
+                if beta < alpha:
+                    break
+            maxval = max(vals, key=lambda item:item[0])[0]
+            actionIndex = [index for index in range(len(vals)) if vals[index][0] == maxval]
+            if len(actionIndex) > 1:
+                for index in actionIndex:
+                    if actions[index] != Directions.STOP:
+                        return (maxval, actions[index], vals[index][2])
+            else:
+                return (maxval, actions[actionIndex[0]], vals[actionIndex[0]][2])
+        else:
+            actions = nodeState.getLegalActions(playerIndex)
+            if len(actions) == 0:
+                return (self.evaluationFunction(nodeState), None, actionsList)
+            vals = []
+            for action in actions:
+                val = self.alpha_beta(nodeState.generateSuccessor(playerIndex, action), \
+                        depth, playerIndex-1, actionsList, alpha, beta)
+                vals += [val]
+                beta = min(beta, val[0])
+                if beta < alpha:
+                    break
+            return min(vals, key=lambda item:item[0])
 
 "P3-4 Side Mission (optional)"
 class ExpectimaxAgent(MultiAgentSearchAgent):
