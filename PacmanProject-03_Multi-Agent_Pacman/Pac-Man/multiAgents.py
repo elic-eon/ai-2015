@@ -185,8 +185,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
             actionIndex = [index for index in range(len(vals)) if vals[index][0] == maxval]
             if len(actionIndex) > 1:
                 for index in actionIndex:
-                    if actions[index] != Directions.STOP:
-                        return (maxval, actions[index], vals[index][2])
+                    if actions[index] == Directions.STOP:
+                        actionIndex.remove(index)
+                        break
+                index = random.choice(actionIndex)
+                return (maxval, actions[index], vals[index][2])
             else:
                 return (maxval, actions[actionIndex[0]], vals[actionIndex[0]][2])
         else:
@@ -235,8 +238,11 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             actionIndex = [index for index in range(len(vals)) if vals[index][0] == maxval]
             if len(actionIndex) > 1:
                 for index in actionIndex:
-                    if actions[index] != Directions.STOP:
-                        return (maxval, actions[index], vals[index][2])
+                    if actions[index] == Directions.STOP:
+                        actionIndex.remove(index)
+                        break
+                index = random.choice(actionIndex)
+                return (maxval, actions[index], vals[index][2])
             else:
                 return (maxval, actions[actionIndex[0]], vals[actionIndex[0]][2])
         else:
@@ -249,7 +255,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                         depth, playerIndex-1, actionsList, alpha, beta)
                 vals += [val]
                 beta = min(beta, val[0])
-                if beta < alpha:
+                if beta > alpha:
                     break
             return min(vals, key=lambda item:item[0])
 
@@ -272,6 +278,29 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         util.raiseNotDefined()
 
 "P3-4"
+def foodBFS(currentGameState):
+    directions = [(1,0), (-1,0), (0,1), (0,-1)]
+    curPos = currentGameState.getPacmanPosition()
+    visited = []
+    foodList = currentGameState.getFood().asList()
+    nodeQueue = util.Queue()
+    nodeQueue.push((curPos, 0))
+
+    while not nodeQueue.isEmpty():
+        node, d = nodeQueue.pop()
+        visited += [node]
+        for direction in directions:
+            newPos = (node[0] + direction[0], node[1] + direction[1])
+            if currentGameState.hasWall(newPos[0], newPos[1]):
+                continue
+            else:
+                if newPos not in visited:
+                    nodeQueue.push((newPos, d+1))
+                if newPos in foodList:
+                    return (newPos, d+1)
+    return (None, float("inf"))
+
+
 def betterEvaluationFunction(currentGameState):
     """
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
@@ -281,8 +310,18 @@ def betterEvaluationFunction(currentGameState):
     """
     
     "[Project 3] YOUR CODE HERE"
+
+    foodList = currentGameState.getFood().asList()
+    curPos = currentGameState.getPacmanPosition()
+    nearFoodPos, nearFoodDist = foodBFS(currentGameState)
+    #print(curPos)
+    print(nearFoodPos)
+    print(nearFoodDist)
+    #raw_input()
     
+    return scoreEvaluationFunction(currentGameState) + 1/nearFoodDist
     util.raiseNotDefined()
+
 
 # Abbreviation
 better = betterEvaluationFunction
