@@ -161,6 +161,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         actionsList = []
         score, choice, actionsList = self.minimax(gameState, self.depth, 0, actionsList)
+        #print(self.depth)
         #print(choice)
         #print(score)
         #print(actionsList)
@@ -217,14 +218,21 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         score, choice, actionsList = self.alpha_beta(gameState, self.depth, 0, actionsList, float("-inf"), float("inf"))
         #print(score)
         #print(actionsList)
+        #raw_input()
         return choice
         
     def alpha_beta(self, nodeState, depth, playerIndex, actionsList, alpha, beta):
         if depth == 0 and playerIndex == 1:
+            #print("depth: " + str(depth))
+            #print(actionsList)
+            #print("score: " + str(self.evaluationFunction(nodeState)))
             return (self.evaluationFunction(nodeState), None, actionsList)
         if playerIndex == 0:
             actions = nodeState.getLegalActions(playerIndex)
             if len(actions) == 0:
+                #print("depth: " + str(depth))
+                #print(actionsList)
+                #print("score: " + str(self.evaluationFunction(nodeState)))
                 return (self.evaluationFunction(nodeState), None, actionsList)
             vals = []
             for action in actions:
@@ -255,7 +263,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                         depth, playerIndex-1, actionsList, alpha, beta)
                 vals += [val]
                 beta = min(beta, val[0])
-                if beta > alpha:
+                if beta < alpha:
                     break
             return min(vals, key=lambda item:item[0])
 
@@ -301,6 +309,26 @@ def foodBFS(currentGameState):
     return (None, float("inf"))
 
 
+#def betterEvaluationFunction(currentGameState):
+    #"""
+      #Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
+      #evaluation function.
+
+      #DESCRIPTION: <write something here so we know what you did>
+    #"""
+    
+    #"[Project 3] YOUR CODE HERE"
+
+    #foodList = currentGameState.getFood().asList()
+    #curPos = currentGameState.getPacmanPosition()
+    #nearFoodPos, nearFoodDist = foodBFS(currentGameState)
+    ##print(curPos)
+    ##print(nearFoodPos)
+    ##print(nearFoodDist)
+    ##raw_input()
+    
+    #return scoreEvaluationFunction(currentGameState) + 1/nearFoodDist
+    #util.raiseNotDefined()
 def betterEvaluationFunction(currentGameState):
     """
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
@@ -310,17 +338,136 @@ def betterEvaluationFunction(currentGameState):
     """
     
     "[Project 3] YOUR CODE HERE"
-
-    foodList = currentGameState.getFood().asList()
-    curPos = currentGameState.getPacmanPosition()
-    nearFoodPos, nearFoodDist = foodBFS(currentGameState)
-    #print(curPos)
-    print(nearFoodPos)
-    print(nearFoodDist)
-    #raw_input()
+    pos = currentGameState.getPacmanPosition()
+    food = currentGameState.getFood()
+    ghostStates = currentGameState.getGhostStates()
+    score = currentGameState.getScore()
+    scaredTimes = [ghostState.scaredTimer for ghostState in ghostStates]
     
-    return scoreEvaluationFunction(currentGameState) + 1/nearFoodDist
-    util.raiseNotDefined()
+    # get the number of capsules left
+    numOfCapsule = len(currentGameState.getCapsules())
+    # calculate the distance to the closest ghost and the distance to any intersection
+    
+    #forkDist, forkPos = ForkDist(currentGameState)
+    #ghostDist = GhostDistPos(currentGameState, forkPos)
+    if GhostSafety(currentGameState): safety = 1000
+    else: safety = 0
+    
+    # calculate the distance to the closest food
+    foodDist = FoodDist(currentGameState)
+    
+    return score*10 - foodDist - 300*numOfCapsule + safety
+    
+def GhostSafety(currentGameState):
+    forkList = ForkList(currentGameState)
+    ghostStates = currentGameState.getGhostStates()
+    
+    if not forkList: return True
+    
+    threat = 0
+    for ghostState in ghostStates:
+        for point in forkList:
+            dist = BFS(currentGameState, ghostState.getPosition(), point[0])
+            if ghostState.scaredTimer > dist: continue
+            if dist < point[1]: 
+                threat += 1
+                break
+    
+    if threat >= len(forkList): return False
+    else: return True
+
+def ForkList(currentGameState):
+    '''
+    The distance to the nearest fork points
+    '''
+    ret = []
+    pacmanPos = currentGameState.getPacmanPosition()
+    walls = currentGameState.getWalls()
+    
+    visitedPositions = [pacmanPos]
+    positionQueue = [(pacmanPos, 0)]
+    
+    if posDegree(currentGameState, pacmanPos) >= 3: return ret
+    while positionQueue:
+        pos = positionQueue[0][0]
+        depth = positionQueue[0][1]
+        
+        for nextPos in ((pos[0]+1, pos[1]), (pos[0]-1, pos[1]), (pos[0], pos[1]+1), (pos[0], pos[1]-1)):
+            if walls[nextPos[0]][nextPos[1]]: continue
+            if nextPos in visitedPositions: continue
+            degree = posDegree(currentGameState, nextPos)
+            if degree >= 3:
+                ret.append((nextPos, depth+1))
+            else:
+                positionQueue.append( (nextPos, depth+1) )
+                visitedPositions.append( nextPos )
+        
+        positionQueue.pop(0)
+        
+    return ret
+    
+def posDegree(currentGameState, pos):
+    '''
+    The degree of a given position
+    '''
+    walls = currentGameState.getWalls()
+    degree = 0
+    for nextPos in ((pos[0]+1, pos[1]), (pos[0]-1, pos[1]), (pos[0], pos[1]+1), (pos[0], pos[1]-1)):
+        if not walls[nextPos[0]][nextPos[1]]:
+            degree += 1
+    return degree
+    
+def FoodDist(currentGameState):
+    '''
+    Calculate the steps required to get to the nearest food
+    '''
+    pacmanPos = currentGameState.getPacmanPosition()
+    food = currentGameState.getFood()
+    walls = currentGameState.getWalls()
+    
+    visitedPositions = [pacmanPos]
+    positionQueue = [(pacmanPos, 0)]
+    
+    while positionQueue:
+        pos = positionQueue[0][0]
+        depth = positionQueue[0][1]
+        
+        for nextPos in ((pos[0]+1, pos[1]), (pos[0]-1, pos[1]), (pos[0], pos[1]+1), (pos[0], pos[1]-1)):
+            if food[nextPos[0]][nextPos[1]]:
+                return depth+1;
+            if (nextPos not in visitedPositions) and (not walls[nextPos[0]][nextPos[1]]):
+                positionQueue.append( (nextPos, depth+1) )
+                visitedPositions.append( nextPos )
+        
+        positionQueue.pop(0)
+        
+    return 0
+    
+def BFS(currentGameState, start, target):
+    '''
+    The distance between 'start' and 'target'
+    '''
+    #for action in state.getLegalActions():
+    walls = currentGameState.getWalls()
+    start = (int(start[0]), int(start[1]))
+    visitedPositions = [start]
+    positionQueue = [(start, 0)]
+    
+    while positionQueue:
+        pos = positionQueue[0][0]
+        depth = positionQueue[0][1]
+        
+        for nextPos in ((pos[0]+1, pos[1]), (pos[0]-1, pos[1]), (pos[0], pos[1]+1), (pos[0], pos[1]-1)):
+            if nextPos == target:
+                return depth+1;
+            if (nextPos not in visitedPositions) and (not walls[nextPos[0]][nextPos[1]]):
+                positionQueue.append( (nextPos, depth+1) )
+                visitedPositions.append( nextPos )
+        
+        positionQueue.pop(0)
+        
+    return 100
+
 
 
 # Abbreviation
