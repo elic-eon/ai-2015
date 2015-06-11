@@ -42,6 +42,19 @@ class BaseAgent(CaptureAgent):
         actions = gameState.getLegalActions(self.index)
         return random.choice(actions)
 
+    def getNearFood(self, gameState, pos):
+        foodList = self.getFood(gameState).asList()
+        if len(foodList) == 0:
+            return None
+        nFood = foodList[0]
+        foodDist = 9999
+        for food in foodList:
+            tDist = self.getMazeDistance(pos, food)
+            if tDist < foodDist:
+                foodDist = tDist
+                nFood = food
+        return nFood
+
     def headDestAction(self, gameState, pos, actions):
         bestAction = actions[0]
         bestDistance = 9999
@@ -103,25 +116,99 @@ class DebugAgent(BaseAgent):
             return Directions.STOP
 
 class TopLaneAgent(BaseAgent):
+    def registerInitialState(self, gameState):
+        BaseAgent.registerInitialState(self, gameState)
+        self.mode = "start"
+        self.defencePos1 = (13, 14)
+        print("init")
+
+    def chooseAction(self, gameState):
+        mypos = gameState.getAgentPosition(self.index)
+        actions = gameState.getLegalActions(self.index)
+        oppPositions = [gameState.getAgentPosition(index) for index in self.oppIndces]
+        #print(oppPositions)
+        nFood = self.getNearFood(gameState, mypos)
+        eatAction = self.tryEatAction(gameState, oppPositions, actions)
+
+        if self.mode == "start":
+            moveAction = self.headDestAction(gameState, self.defencePos1 , actions)
+            successor = self.getSuccessor(gameState, moveAction)
+            nextPos = successor.getAgentPosition(self.index)
+            if nextPos == self.defencePos1:
+                self.mode = "attact"
+        else:
+            if nFood == None:
+                nFood = self.defencePos1
+            moveAction = self.headDestAction(gameState, nFood, actions)
+
+        if eatAction:
+            return eatAction
+        else:
+            return moveAction
+
     def nothing():
         return 1
 
 class MidLaneAgent(BaseAgent):
+    def registerInitialState(self, gameState):
+        BaseAgent.registerInitialState(self, gameState)
+        self.mode = "start"
+        self.defencePos1 = (14, 7)
+
     def chooseAction(self, gameState):
+        mypos = gameState.getAgentPosition(self.index)
         actions = gameState.getLegalActions(self.index)
-        pos1 = (14, 7)
         oppPositions = [gameState.getAgentPosition(index) for index in self.oppIndces]
-        print(oppPositions)
-        destAcrion = self.headDestAction(gameState, pos1, actions)
+        #print(oppPositions)
+        nFood = self.getNearFood(gameState, mypos)
         eatAction = self.tryEatAction(gameState, oppPositions, actions)
+
+        if self.mode == "start":
+            moveAction = self.headDestAction(gameState, self.defencePos1 , actions)
+            #successor = self.getSuccessor(gameState, moveAction)
+            #nextPos = successor.getAgentPosition(self.index)
+            #if nextPos == self.defencePos1:
+                #self.mode = "attact"
+        else:
+            if nFood == None:
+                nFood = self.defencePos1
+            moveAction = self.headDestAction(gameState, nFood, actions)
+
         if eatAction:
             return eatAction
         else:
-            return destAcrion
-
+            return moveAction
     def nothing():
         return 1
 
 class BotLaneAgent(BaseAgent):
+    def registerInitialState(self, gameState):
+        BaseAgent.registerInitialState(self, gameState)
+        self.mode = "start"
+        self.defencePos1 = (11, 2)
+
+    def chooseAction(self, gameState):
+        mypos = gameState.getAgentPosition(self.index)
+        actions = gameState.getLegalActions(self.index)
+        oppPositions = [gameState.getAgentPosition(index) for index in self.oppIndces]
+        #print(oppPositions)
+        nFood = self.getNearFood(gameState, mypos)
+        eatAction = self.tryEatAction(gameState, oppPositions, actions)
+
+        if self.mode == "start":
+            moveAction = self.headDestAction(gameState, self.defencePos1 , actions)
+            #successor = self.getSuccessor(gameState, moveAction)
+            #nextPos = successor.getAgentPosition(self.index)
+            #if nextPos == self.defencePos1:
+                #self.mode = "attact"
+        else:
+            if nFood == None:
+                nFood = self.defencePos1
+            moveAction = self.headDestAction(gameState, nFood, actions)
+
+        if eatAction:
+            return eatAction
+        else:
+            return moveAction
     def nothing():
         return 1
