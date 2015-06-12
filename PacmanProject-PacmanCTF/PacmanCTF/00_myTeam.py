@@ -83,9 +83,6 @@ class DummyAgent(CaptureAgent):
     Picks among actions randomly.
     """
     actions = gameState.getLegalActions(self.index)
-    walls = gameState.getWalls()
-    print(walls)
-    raw_input()
 
     '''
     You should change this in your own agent.

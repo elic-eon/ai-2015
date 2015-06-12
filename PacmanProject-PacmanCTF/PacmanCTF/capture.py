@@ -531,8 +531,8 @@ class AgentRules:
             redCount += agentState.numReturned
           else:
             blueCount += agentState.numReturned
-        if redCount >= (TOTAL_FOOD/2) - MIN_FOOD or blueCount >= (TOTAL_FOOD/2) - MIN_FOOD:
-          state.data._win = True
+        #if redCount >= (TOTAL_FOOD/2) - MIN_FOOD or blueCount >= (TOTAL_FOOD/2) - MIN_FOOD:
+          #state.data._win = True
 
 
     if agentState.isPacman and manhattanDistance( nearest, next ) <= 0.9 :
@@ -1093,7 +1093,7 @@ def runGames( layouts, agents, display, length, numGames, record, numTraining, r
       #f.close()
       print "recorded"
       g.record = cPickle.dumps(components)
-      with open('[Replay] %s v.s. %s.prp' %(redTeamName, blueTeamName),'wb') as f:
+      with open('[Replay] %s v.s. %s (%d).prp' %(redTeamName, blueTeamName, g.state.data.score),'wb') as f:
         f.write(g.record)
       print('out')
   if numGames > 1:
